@@ -1,0 +1,28 @@
+GUI Python done for the most part
+Deck changed to just strings to send between client and server
+Got rid of most comments so we need to write our own
+
+*important to basically finishd code*
+first things first we need to play the game on the server to send a win or loss
+to client.
+
+for server,
+keep track of player connections to server
+once all players are connected, start game
+make method for game where you make deck, shuffle, deal, etc
+once all player turns are done, get values and send winner to the client.
+
+Spellcheck everything that isn't written by us
+
+Fixing ace check for 1 or 11
+(button for 1 or 11)
+
+*bonus*
+keep track of player scores in real time.
+When established connection, client writes their name
+
+more debugging
+
+Images per card
+
+Dark mode
