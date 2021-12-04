@@ -8,6 +8,7 @@ public class ServerMultithread {
         ServerSocket welcomeSocket = new ServerSocket(6789);
         System.out.println(InetAddress.getLocalHost());
 
+        // Establishes connections
         while (true) {
             System.out.println("Waiting for connections");
             Socket connectionSocket = welcomeSocket.accept();
@@ -20,6 +21,7 @@ public class ServerMultithread {
 
 class ClientHandler extends Thread {
     private Socket connectionSocket;
+    // somehow get number of clients
     private int playerNum;
 
     /**
@@ -43,9 +45,11 @@ class ClientHandler extends Thread {
             BufferedReader in = new BufferedReader(new InputStreamReader(connectionSocket.getInputStream()));
             PrintWriter out = new PrintWriter(connectionSocket.getOutputStream(), true);
 
+            // Starts rounds with same deck
             while (true) {
                 if (in.readLine().equals("start round")) {
                     System.out.println("Starting Game");
+                    // call game state
                     blackjackGame(in, out, deck);
                 }
             }
@@ -63,12 +67,10 @@ class ClientHandler extends Thread {
      */
     public void blackjackGame(BufferedReader in, PrintWriter out, Deck deck) throws IOException {
         while (true) {
-
-            // Read a string from client
             String clientResponse = in.readLine();
             System.out.println("Client: " + clientResponse);
 
-            // receive hit
+            // send a card on hit
             if (clientResponse.matches("hit")) {
                 System.out.println("Sending: " + deck.cardList.get(Deck.index));
                 out.println(deck.cardList.get(Deck.index));
@@ -80,20 +82,22 @@ class ClientHandler extends Thread {
              */
 
             // player turn over
-            // call winner
             if (clientResponse.matches("game over")) {
                 System.out.println("Reciving hand from Client");
                 String value = in.readLine();
                 System.out.println("Client: " + value);
+                // player value
                 int pValue = Integer.parseInt(value);
-
+                // dealer value
                 int dValue = dealerValue(deck, pValue);
 
+                // check for winners
                 String winner = decideWinner(pValue, dValue);
                 System.out.println("Winner: " + winner);
                 out.println(winner);
             }
 
+            // if the cards run out print the statement, wont stop game
             if (Deck.index == 52) {
                 System.out.println("Error! no more cards, restart server");
                 break;
@@ -106,6 +110,7 @@ class ClientHandler extends Thread {
      * 
      * @param pValue
      * @param dValue
+     * @return game winner
      */
     public String decideWinner(int pValue, int dValue) {
         String winner = "";
@@ -129,7 +134,7 @@ class ClientHandler extends Thread {
      * Gets the hand value for the dealer
      * 
      * @param deck
-     * @return
+     * @return dealer value
      */
     public static int dealerValue(Deck deck, int pValue) {
         int total = 0;
@@ -141,10 +146,10 @@ class ClientHandler extends Thread {
     }
 
     /**
-     * Returns the value of the card
+     * Gets the value of the card
      * 
      * @param card
-     * @return
+     * @return value of the card
      */
     public static int cardValue(String card) {
         int value = 0;
