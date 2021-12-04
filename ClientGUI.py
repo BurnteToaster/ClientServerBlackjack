@@ -25,7 +25,7 @@ responseLabel.grid(row=2, column=0)
 
 # add hand label when game starts
 
-# Player start function
+# start button function
 def start():
     clientSocket.send("start round\n".encode())
     global hand
@@ -42,18 +42,20 @@ startButton = Button(root, text="Start", command=start)
 startButton.grid(row=97, column=0)
 
 # gets the value of a card from the server
-# jack king queen and ace are all worth 10
+# jack king queen are all worth 10
 def cardValue(card):
     value = 0
     if card[:2] == "10" or card[:2] == "11" or card[:2] == "12" or card[:2] == "13":
         value = 10
+    #We need to fix this somehow
     elif card[0] == "1":
         value = str(input("Ace! Enter value 1 or 11: "))
     else:
         value = int(card[0])
-    #later add aces to be worth 11
+    
     return value
 
+# formatting to display cards
 def cardDisplay(card):
     if card[:2] == "10":
         return "10" + card[2:]
@@ -66,7 +68,7 @@ def cardDisplay(card):
     else:
         return card[0] + " " + card[2:]
 
-# Player hit function
+# hit button function
 def hit():
     clientSocket.send("hit\n".encode())
     serverResponse = clientSocket.recv(1024)
@@ -77,13 +79,14 @@ def hit():
     global handValue
     handValue += value
 
-    # check if handValue is over 21
+    # if the player busts, the game ends
     if handValue > 21:
         gameLabel.config(text="Bust! You lose!")
         statusLabel.config(text="Waiting for other player...")
         hitButton.config(state=DISABLED)
         standButton.config(state=DISABLED)
 
+    # if the player has 21, turn over, and dealer plays
     elif handValue == 21:
         gameLabel.config(text="Blackjack!")
         statusLabel.config(text="Waiting for other player...")
@@ -95,6 +98,7 @@ def hit():
         winner = clientSocket.recv(1024)
         gameLabel.config(text="Winner: " + winner.decode())
 
+    # if the player has not busted, the player can hit again
     else:
         gameLabel.config(text="Your hand value is: " + str(handValue))
         statusLabel.config(text="Waiting for other player...")
@@ -105,7 +109,7 @@ hitButton = Button(root, text="Hit", command=hit)
 hitButton.grid(row=98, column=0)
 hitButton.config(state=DISABLED)
 
-# Player stand function
+# stand button function
 def stand():
     clientSocket.send("game over\n".encode())
     clientSocket.send((str(handValue)+"\n").encode())
