@@ -1,6 +1,7 @@
 from tkinter import *
 from tkinter import ttk
 from socket import *
+import time
 
 hand = []
 handValue = 0
@@ -36,6 +37,7 @@ def start():
     gameLabel.config(text="Your hand value is: " + str(handValue))
     hitButton.config(state=NORMAL)
     standButton.config(state=NORMAL)
+    startButton.config(state=DISABLED)
 
 # starts game for players
 startButton = Button(root, text="Start", command=start)
@@ -85,6 +87,7 @@ def hit():
         statusLabel.config(text="Waiting for other player...")
         hitButton.config(state=DISABLED)
         standButton.config(state=DISABLED)
+        startButton.config(state=NORMAL)
 
     # if the player has 21, turn over, and dealer plays
     elif handValue == 21:
@@ -92,11 +95,13 @@ def hit():
         statusLabel.config(text="Waiting for other player...")
         hitButton.config(state=DISABLED)
         standButton.config(state=DISABLED)
+        time.sleep(1.5)
         clientSocket.send("game over\n".encode())
         clientSocket.send((str(handValue)+"\n").encode())
         print(hand)
         winner = clientSocket.recv(1024)
         gameLabel.config(text="Winner: " + winner.decode())
+        startButton.config(state=NORMAL)
 
     # if the player has not busted, the player can hit again
     else:
@@ -116,6 +121,7 @@ def stand():
     print(hand)
     winner = clientSocket.recv(1024)
     gameLabel.config(text="Winner: " + winner.decode())
+    startButton.config(state=NORMAL)
 
 standButton = Button(root, text="Stand", command=stand)
 standButton.grid(row=99, column=0)
