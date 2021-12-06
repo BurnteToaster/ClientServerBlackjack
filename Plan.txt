@@ -4,15 +4,10 @@ Got rid of most comments so we need to write our own
 
 ***********************************
 to do:
-Fixing ace check for 1 or 11
-(button for 1 or 11)
-
 for server,
 keep track of player connections to server
 once all players are connected, start game
 once all player turns are done, get values and send winner to the client.
-
-Spellcheck everything that isn't written by us
 
 *bonus*
 keep track of player scores in real time.
@@ -21,5 +16,3 @@ When established connection, client writes their name
 more debugging
 
 Images per card
-
-Dark mode
