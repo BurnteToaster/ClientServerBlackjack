@@ -83,7 +83,7 @@ class ClientHandler extends Thread {
 
             // player turn over
             if (clientResponse.matches("game over")) {
-                System.out.println("Reciving hand from Client");
+                System.out.println("Receiving hand from Client");
                 String value = in.readLine();
                 System.out.println("Client: " + value);
                 // player value
@@ -117,15 +117,12 @@ class ClientHandler extends Thread {
         if (dValue > 21) {
             System.out.println("Dealer Busts");
             winner += "Dealer Busts with " + dValue;
-        } else if (dValue > pValue) {
+        } else if (dValue >= pValue) {
             System.out.println("Dealer Wins");
             winner += "Dealer Wins with " + dValue;
         } else if (dValue < pValue) {
             System.out.println("Player Wins");
             winner += "Player Wins, Dealer has " + dValue;
-        } else {
-            System.out.println("Push");
-            winner += "Push";
         }
         return winner;
     }

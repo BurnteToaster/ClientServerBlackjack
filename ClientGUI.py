@@ -14,20 +14,50 @@ clientSocket.connect((serverName, serverPort))
 
 root = Tk()
 root.title("Blackjack")
+root.config(bg="#3A3B3C")
+root.attributes('-fullscreen', True)
+root.resizable(True,True)
+root.iconbitmap('C:/Users/pbrah/Downloads\Project 3/BlackJack/src/blackjackicon.ico')
 
-statusLabel = Label(root, text="Waiting for game to start...")
+def disable_event():
+    pass
+
+# Opens popup to enter player name
+name = Toplevel(root)
+name.title("Enter player name")
+name.config(bg="#3A3B3C")
+window_width = 600
+window_height = 200
+screen_width = root.winfo_screenwidth()
+screen_height = root.winfo_screenheight()
+center_x = int(screen_width/2 - window_width / 2)
+center_y = int(screen_height/2 - window_height / 2)
+name.geometry(f'{window_width}x{window_height}+{center_x}+{center_y}')
+name.resizable(False,False)
+name.protocol("WM_DELETE_WINDOW", disable_event)
+
+inputBox = Text(name, height=1, width=20)
+inputBox.place(relx=0.6, rely=0.5, anchor=E)
+
+def getInputText(inp):
+    gameLabel["text"]="Welcome to Blackjack, "+inp+"!"
+    name.destroy()
+
+enterButton = Button(name, text="Enter", fg="white", bg="#5A5B5C", command=lambda: getInputText((inputBox.get(1.0, "end-1c"))))
+enterButton.place(relx=0.7, rely=0.5, anchor=W)
+enterButton.config(width=10)
+
+statusLabel = Label(root, text="Waiting to start...", fg="white", bg="#3A3B3C", font=20)
 statusLabel.grid(row=0, column=0)
+statusLabel.place(relx=0.5, rely=0.05, anchor=CENTER)
 
-gameLabel = Label(root, text="Welcome to Blackjack!")
+gameLabel = Label(root, text="Welcome to Blackjack!", fg="white", bg="#3A3B3C", font=("Papyrus", 60))
 gameLabel.grid(row=1, column=0)
+gameLabel.place(relx=0.5, rely=0.2, anchor=CENTER)
 
-responseLabel = Label(root, text="")
+responseLabel = Label(root, text="", fg="white", bg="#3A3B3C",font=40)
 responseLabel.grid(row=2, column=0)
-
-# add hand label when game starts
-
-# popup window for ace value
-
+responseLabel.place(relx=0.5, rely=0.3, anchor=CENTER)
 
 # start button function
 def start():
@@ -41,10 +71,6 @@ def start():
     hitButton.config(state=NORMAL)
     standButton.config(state=NORMAL)
     startButton.config(state=DISABLED)
-
-# starts game for players
-startButton = Button(root, text="Start", command=start)
-startButton.grid(row=97, column=0)
 
 # gets the value of a card from the server
 # jack king queen are all worth 10
@@ -66,20 +92,34 @@ def cardValue(card):
     
         popup = Toplevel(root)
         popup.title("Ace Value")
+        popup.config(bg="#3A3B3C")
+        window_width = 300
+        window_height = 200
+        screen_width = root.winfo_screenwidth()
+        screen_height = root.winfo_screenheight()
+        center_x = int(screen_width/2 - window_width / 2)
+        center_y = int(screen_height/2 - window_height / 2)
+        popup.geometry(f'{window_width}x{window_height}+{center_x}+{center_y}')
+        popup.resizable(False,False)
+        popup.protocol("WM_DELETE_WINDOW", disable_event)
 
-        l = Label(popup, text="Would you like the Ace to be a 1 or 11?")
+        l = Label(popup, text="Would you like the Ace to be a 1 or 11?", 
+                    fg="white", bg="#3A3B3C", font=25)
         l.grid(row=0, column=0)
+        l.place(relx=0.5, rely=0.25, anchor=CENTER)
 
-        b1 = Button(popup, text="1", command=lambda: setValue(1))
+        b1 = Button(popup, text="1", fg="white", bg="#5A5B5C", command=lambda: setValue(1))
         b1.grid(row=1, column=0)
-        b1.config(state=NORMAL)
+        b1.config(state=NORMAL, width=4)
+        b1.place(relx=0.25, rely=0.5)
 
-        b2 = Button(popup, text="11", command=lambda: setValue(11))
+        b2 = Button(popup, text="11", fg="white", bg="#5A5B5C", command=lambda: setValue(11))
         b2.grid(row=2, column=0)
-        b2.config(state=NORMAL)
+        b2.config(state=NORMAL, width=4)
+        b2.place(relx=0.65, rely=0.5)
 
         if 11 + handValue > 21:
-            b2.config(state=DISABLED)
+            b2.config(state=DISABLED, width=4)
 
         root.wait_window(popup)
     else:
@@ -116,15 +156,16 @@ def hit():
     # if the player busts, the game ends
     if handValue > 21:
         gameLabel.config(text="Bust! You lose!")
-        statusLabel.config(text="Waiting for other player...")
+        statusLabel.config(text="Waiting for your move...")
         hitButton.config(state=DISABLED)
         standButton.config(state=DISABLED)
         startButton.config(state=NORMAL)
+        responseLabel.config(text=cardDisplay(serverResponse[:-2].decode()))
 
     # if the player has 21, turn over, and dealer plays
     elif handValue == 21:
         gameLabel.config(text="Blackjack!")
-        statusLabel.config(text="Waiting for other player...")
+        statusLabel.config(text="Waiting for your move...")
         hitButton.config(state=DISABLED)
         standButton.config(state=DISABLED)
         clientSocket.send("game over\n".encode())
@@ -137,13 +178,9 @@ def hit():
     # if the player has not busted, the player can hit again
     else:
         gameLabel.config(text="Your hand value is: " + str(handValue))
-        statusLabel.config(text="Waiting for other player...")
+        statusLabel.config(text="Waiting for your move...")
         # change display card here
         responseLabel.config(text=cardDisplay(serverResponse[:-2].decode()))
-
-hitButton = Button(root, text="Hit", command=hit)
-hitButton.grid(row=98, column=0)
-hitButton.config(state=DISABLED)
 
 # stand button function
 def stand():
@@ -154,13 +191,29 @@ def stand():
     gameLabel.config(text="Winner: " + winner.decode())
     startButton.config(state=NORMAL)
 
-standButton = Button(root, text="Stand", command=stand)
-standButton.grid(row=99, column=0)
-standButton.config(state=DISABLED)
+# starts game for players
+startButton = Button(root, text="Start", fg="white", bg="#5A5B5C", command=start)
+startButton.grid(row=97, column=0)
+startButton.place(relx=0.5, rely=0.5, anchor=CENTER)
+startButton.config(width=30, height=5)
 
-# buttons quits game
-quitButton = Button(root, text="Quit", command=root.destroy)
+#button deals player a card
+hitButton = Button(root, text="Hit", fg="white", bg="#5A5B5C", command=hit)
+hitButton.grid(row=98, column=0)
+hitButton.config(state=DISABLED, width=30, height=5)
+hitButton.place(relx=0.5, rely=0.6, anchor=CENTER)
+
+#button keeps your value
+standButton = Button(root, text="Stand", fg="white", bg="#5A5B5C", command=stand)
+standButton.grid(row=99, column=0)
+standButton.config(state=DISABLED,width=30, height=5)
+standButton.place(relx=0.5, rely=0.7, anchor=CENTER)
+
+# button quits game
+quitButton = Button(root, text="Quit", fg="white", bg="#5A5B5C", command=root.destroy)
 quitButton.grid(row=100, column=0)
+quitButton.place(relx=0.5, rely=0.8, anchor=CENTER)
+quitButton.config(width=30, height=5)
 
 root.mainloop()
 clientSocket.close()
