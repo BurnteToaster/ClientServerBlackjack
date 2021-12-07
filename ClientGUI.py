@@ -1,28 +1,42 @@
+'''
+ * ClientGUI for blackjack game
+ * handles the GUI and keeps track of player actions for the game
+ * 
+ * @author Matthew Mercado & Pratosh Brahmbhatt
+ * @date December 6, 2021
+'''
+
 from tkinter import *
 from tkinter import ttk
 from socket import *
+# (not currently using time)
 import time
 
+# initialize global variables
 hand = []
 handValue = 0
 serverResponse = ""
 
+# ask for server address and establish connection
 serverName = 'localhost'
+serverName = input("Enter server address: ")
 serverPort = 6789
 clientSocket = socket(AF_INET, SOCK_STREAM)
 clientSocket.connect((serverName, serverPort))
 
+# initializes the GUI
 root = Tk()
 root.title("Blackjack")
 root.config(bg="#3A3B3C")
 root.attributes('-fullscreen', True)
 root.resizable(True,True)
-root.iconbitmap('C:/Users/pbrah/Downloads\Project 3/BlackJack/src/blackjackicon.ico')
+#commented out because it is relative path
+#root.iconbitmap('C:/Users/pbrah/Downloads\Project 3/BlackJack/src/blackjackicon.ico')
 
 def disable_event():
     pass
 
-# Opens popup to enter player name
+# Opens popup to enter player name could be used for other things
 name = Toplevel(root)
 name.title("Enter player name")
 name.config(bg="#3A3B3C")
@@ -39,6 +53,7 @@ name.protocol("WM_DELETE_WINDOW", disable_event)
 inputBox = Text(name, height=1, width=20)
 inputBox.place(relx=0.6, rely=0.5, anchor=E)
 
+# gets player names from popup box
 def getInputText(inp):
     gameLabel["text"]="Welcome to Blackjack, "+inp+"!"
     name.destroy()
@@ -59,7 +74,7 @@ responseLabel = Label(root, text="", fg="white", bg="#3A3B3C",font=40)
 responseLabel.grid(row=2, column=0)
 responseLabel.place(relx=0.5, rely=0.3, anchor=CENTER)
 
-# start button function
+# start button function, sends start message to server
 def start():
     clientSocket.send("start round\n".encode())
     global hand
@@ -89,7 +104,8 @@ def cardValue(card):
             else:
                 value = 11 
             popup.destroy()
-    
+            
+        # Create popup window to choose value of ace
         popup = Toplevel(root)
         popup.title("Ace Value")
         popup.config(bg="#3A3B3C")
@@ -118,6 +134,7 @@ def cardValue(card):
         b2.config(state=NORMAL, width=4)
         b2.place(relx=0.65, rely=0.5)
 
+        # Limits to player can't go over 21 willingly or by accident
         if 11 + handValue > 21:
             b2.config(state=DISABLED, width=4)
 
@@ -127,7 +144,7 @@ def cardValue(card):
 
     return value
 
-# formatting to display cards in GUI
+# Formatting to display cards in GUI since server sends numbers
 def cardDisplay(card):
     if card[:2] == "10":
         return "10" + card[2:]
@@ -142,14 +159,23 @@ def cardDisplay(card):
     else:
         return card[0] + " " + card[2:]
 
-# hit button function
+# Sends hit command to server, updates GUI
 def hit():
     clientSocket.send("hit\n".encode())
     serverResponse = clientSocket.recv(1024)
+    # If the server runs out of cards, the server needs to be restarted
+    if serverResponse.decode() == "deck ran out\n":
+        statusLabel.config(text="Deck ran out! Restart Server to continue.")
+        hitButton.config(state=DISABLED)
+        standButton.config(state=DISABLED)
+        startButton.config(state=DISABLED)
+        
+    # Prints out the server response
     print("Server Response: " + serverResponse.decode())
+
+    # Adds the card and the value to the hand
     hand.append(cardDisplay(serverResponse[:-2].decode()))
     value = cardValue(serverResponse.decode())
-    
     global handValue
     handValue += value
 
@@ -182,7 +208,7 @@ def hit():
         # change display card here
         responseLabel.config(text=cardDisplay(serverResponse[:-2].decode()))
 
-# stand button function
+# Sends game over command and the hand value to server and receives winner from server
 def stand():
     clientSocket.send("game over\n".encode())
     clientSocket.send((str(handValue)+"\n").encode())
@@ -197,13 +223,13 @@ startButton.grid(row=97, column=0)
 startButton.place(relx=0.5, rely=0.5, anchor=CENTER)
 startButton.config(width=30, height=5)
 
-#button deals player a card
+# button deals player a card
 hitButton = Button(root, text="Hit", fg="white", bg="#5A5B5C", command=hit)
 hitButton.grid(row=98, column=0)
 hitButton.config(state=DISABLED, width=30, height=5)
 hitButton.place(relx=0.5, rely=0.6, anchor=CENTER)
 
-#button keeps your value
+# button keeps your value
 standButton = Button(root, text="Stand", fg="white", bg="#5A5B5C", command=stand)
 standButton.grid(row=99, column=0)
 standButton.config(state=DISABLED,width=30, height=5)
