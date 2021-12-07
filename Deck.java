@@ -1,5 +1,9 @@
+
 import java.util.*;
 
+/**
+ * Creates a deck of cards for the game.
+ */
 public class Deck {
     List<String> cardList;
 
@@ -7,6 +11,7 @@ public class Deck {
 
     public Deck() {
         cardList = new ArrayList<String>();
+        // creates a list of card strings in order
         for (int i = 0; i < 4; i++) {
             for (int j = 1; j < 14; j++) {
                 if (i == 0) {
@@ -20,6 +25,7 @@ public class Deck {
                 }
             }
         }
+        // shuffles the deck so we can choose cards in order
         Collections.shuffle(cardList);
     }
 }
